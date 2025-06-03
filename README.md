@@ -5,11 +5,11 @@ This is a sample project meant to act as a guide for migrating content from Cont
 Tools Used
 This project utilizes the following:
 
-space export content command from the Contentful CLI to export content.
+- (contentful-cli - space export content command)[https://github.com/contentful/contentful-cli/tree/main/docs/space/export] from the Contentful CLI to export content.
 
-Storyblok JavaScript client to create corresponding entries in the target Storyblok space.
+- (storyblok-js-client)[https://github.com/storyblok/storyblok-js-client] to create corresponding entries in the target Storyblok space.
 
-slugify to generate URL-safe slugs.
+- (slugify)[https://github.com/simov/slugify] to generate URL-safe slugs.
 
 Getting Started
 
