@@ -1,9 +1,8 @@
-import { Storyblok } from "../../lib/storyblokClient";
-import { ContentfulExport } from "../../types/ContentfulExport";
+import { Storyblok } from "../../lib/storyblokClient.js";
 import fs from "fs";
 import FormData from "form-data";
 import path from "path";
-import storyblokConfig from "../../../storyblokConfig.json";
+import storyblokConfig from "../../../storyblokConfig.json" with { type: "json" };
 
 async function fileUpload(signed_request, file, success, failed) {
   var form = new FormData();
@@ -19,10 +18,7 @@ async function fileUpload(signed_request, file, success, failed) {
   });
 }
 
-export default async function importAssets(
-  assets: ContentfulExport["assets"],
-  locale: string = "en-US"
-) {
+export default async function importAssets(assets, locale = "en-US") {
   console.log("Importing assets...");
   for (const asset of assets ?? []) {
     const file = asset.fields.file?.[locale];
@@ -34,7 +30,7 @@ export default async function importAssets(
           size: `${file.details.image.width}x${file.details.image.height}`,
         }
       )
-        .then(async (response: any) => {
+        .then(async (response) => {
           if (file?.url) {
             const contentPath = path.resolve(
               process.cwd(),

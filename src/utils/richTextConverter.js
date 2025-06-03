@@ -1,18 +1,13 @@
-type ContentfulNode = any;
-
 //Does not handle all cases, only the ones we need for this example
 
-const markTypeMap: Record<string, { type: string } | null> = {
+const markTypeMap = {
   bold: { type: "bold" },
   italic: { type: "italic" },
   underline: { type: "underline" },
   link: null, // handled differently in hyperlink node
 };
 
-const nodeTypeHandlers: Record<
-  string,
-  (node: ContentfulNode, content: any[]) => any
-> = {
+const nodeTypeHandlers = {
   document: (node, content) => ({ type: "doc", content }),
   paragraph: (node, content) => ({ type: "paragraph", content }),
   "heading-1": (node, content) => ({
@@ -60,7 +55,7 @@ const nodeTypeHandlers: Record<
     const href = node.data?.uri;
     return {
       type: "text",
-      text: node.content?.map((c: any) => c.value ?? "").join("") || "",
+      text: node.content?.map((c) => c.value ?? "").join("") || "",
       marks: [{ type: "link", attrs: { href } }],
     };
   },
@@ -81,13 +76,13 @@ const nodeTypeHandlers: Record<
   },
 };
 
-export function convertContentfulRT(node: ContentfulNode): any {
+export function convertContentfulRT(node) {
   if (node.nodeType === "text") {
     if (!node.value || node.value.trim() === "") return null;
 
     const marks =
       node.marks
-        ?.map((mark: any) => markTypeMap[mark.type] ?? null)
+        ?.map((mark) => markTypeMap[mark.type] ?? null)
         .filter(Boolean) ?? [];
 
     return {
@@ -98,7 +93,7 @@ export function convertContentfulRT(node: ContentfulNode): any {
   }
 
   if (node.content) {
-    const content = node.content.flatMap(convertContentfulRT).filter(Boolean); // Remove nulls like empty text nodes
+    const content = node.content.flatMap(convertContentfulRT).filter(Boolean);
 
     const handler = nodeTypeHandlers[node.nodeType];
     if (handler) {

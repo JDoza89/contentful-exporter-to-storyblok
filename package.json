@@ -1,11 +1,9 @@
 {
   "scripts": {
     "export": "contentful space export --config contentfulConfig.json",
-    "build": "rm -rf dist && tsc",
-    "migrate": "rm -rf dist && tsc && node dist/src/scripts/migrate.js"
+    "migrate": "node src/scripts/migrate.js"
   },
   "dependencies": {
-    "@types/json-patch": "^0.0.33",
     "contentful-export": "^7.21.53",
     "contentful-management": "^11.52.2",
     "json-patch": "^0.7.0",
@@ -13,6 +11,7 @@
     "storyblok-js-client": "^7.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21"
-  }
+    "node": "^22.15.21"
+  },
+  "type": "module"
 }

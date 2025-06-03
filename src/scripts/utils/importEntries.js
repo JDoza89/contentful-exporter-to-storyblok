@@ -1,22 +1,15 @@
-import { ContentfulExport } from "../../types/ContentfulExport";
-import { ISbContentMangmntAPI } from "storyblok-js-client/dist/types/interfaces";
-import { convertContentfulRT } from "../../utils/richTextConverter";
-import { generateSlugFromName } from "../../utils/urlGeneration";
-import { Storyblok } from "../../lib/storyblokClient";
-import storyblokConfig from "../../../storyblokConfig.json";
-import { EntryProps, SysLink } from "contentful-management";
-type Entry = EntryProps<Record<string, Record<string, unknown>>>;
-type GroupedEntries = ReturnType<typeof groupEntries>;
-type MappedStory = ISbContentMangmntAPI["story"];
+import { convertContentfulRT } from "../../utils/richTextConverter.js";
+import { generateSlugFromName } from "../../utils/urlGeneration.js";
+import { Storyblok } from "../../lib/storyblokClient.js";
+import storyblokConfig from "../../../storyblokConfig.json" with { type: "json" };
+
+// Using the Universal JavaScript Client:
+// https://github.com/storyblok/storyblok-js-client
 
 // We need to group the entries so that we can create the stories in the correct order
 // articles are dependent on authors and categories, so we need to create them first
-function groupEntries(entries: ContentfulExport["entries"]) {
-  const grouped = {
-    category: [] as any[],
-    author: [] as any[],
-    article: [] as any[],
-  };
+function groupEntries(entries) {
+  const grouped = { category: [], author: [], article: [] };
 
   for (const entry of entries ?? []) {
     const type = entry.sys.contentType.sys.id;
@@ -28,16 +21,11 @@ function groupEntries(entries: ContentfulExport["entries"]) {
   return grouped;
 }
 
-async function mapAuthorEntry(
-  entry: Entry,
-  assets: ContentfulExport["assets"],
-  locale: string
-): Promise<MappedStory> {
-  let image: any = null;
+async function mapAuthorEntry(entry, assets, locale, parentFolder) {
+  let image = null;
   try {
     const asset = assets?.find(
-      (asset) =>
-        asset.sys.id === (entry.fields?.image?.[locale] as SysLink)?.sys?.id
+      (asset) => asset.sys.id === entry.fields?.image?.[locale]?.sys?.id
     );
     const sbImage = await Storyblok.get(
       `spaces/${storyblokConfig.storyblokSpaceId}/assets/`,
@@ -54,7 +42,7 @@ async function mapAuthorEntry(
   }
   return {
     name: entry.fields?.internalName?.[locale],
-    slug: generateSlugFromName(entry.fields?.internalName?.[locale] as string),
+    slug: generateSlugFromName(entry.fields?.internalName?.[locale]),
     content: {
       name:
         entry.fields?.title?.[locale] || entry.fields?.internalName?.[locale],
@@ -73,12 +61,12 @@ async function mapAuthorEntry(
       component: "author",
     },
     is_folder: false,
-    parent_id: "675527879", // ID of the parent folder "authors"
+    parent_id: parentFolder, // ID of the parent folder "authors"
     is_startpage: false,
-  } as ISbContentMangmntAPI["story"];
+  };
 }
 
-function mapCategoryEntry(entry: Entry, locale: string): MappedStory {
+function mapCategoryEntry(entry, locale, parentFolder) {
   return {
     name: entry.fields?.name?.[locale],
     slug: entry.fields?.slug?.[locale],
@@ -88,23 +76,20 @@ function mapCategoryEntry(entry: Entry, locale: string): MappedStory {
       externalId: entry.sys.id, // used to find the value and assign it to the correct blog - temporary field
     },
     is_folder: false,
-    parent_id: "675546908", // ID of the parent folder "categories"
+    parent_id: parentFolder, // ID of the parent folder "categories"
     is_startpage: false,
-  } as ISbContentMangmntAPI["story"];
+  };
 }
 
-async function mapArticleEntry(
-  entry: Entry,
-  locale: string
-): Promise<MappedStory> {
+async function mapArticleEntry(entry, locale, parentFolder) {
   const authors = await Storyblok.get(
     `spaces/${storyblokConfig.storyblokSpaceId}/stories`,
     {
       component: "author",
       filter_query: {
         externalId: {
-          in: (entry.fields?.authors?.[locale] as SysLink[])
-            ?.map((author: any) => author.sys.id)
+          in: entry.fields?.authors?.[locale]
+            ?.map((author) => author.sys.id)
             .join(","),
         },
       },
@@ -116,8 +101,8 @@ async function mapArticleEntry(
       component: "category",
       filter_query: {
         externalId: {
-          in: (entry.fields?.categories?.[locale] as SysLink[])
-            ?.map((author: any) => author.sys.id)
+          in: entry.fields?.categories?.[locale]
+            ?.map((author) => author.sys.id)
             .join(","),
         },
       },
@@ -138,29 +123,54 @@ async function mapArticleEntry(
       component: "article",
     },
     is_folder: false,
-    parent_id: "674895072", // ID of the parent folder "blogs"
+    parent_id: parentFolder, // ID of the parent folder "blogs"
     is_startpage: false,
-  } as ISbContentMangmntAPI["story"];
+  };
 }
 
-async function createStoriesSequentially(
-  groupedEntries: GroupedEntries,
-  assets: ContentfulExport["assets"],
-  locale: string
-) {
-  for (const group of ["author", "category", "article"] as const) {
+async function createStoriesSequentially(groupedEntries, assets, locale) {
+  // Create the parent folders first
+  const blogFolder = await Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
+  "story": {
+    "name": "Blog",
+    "slug": "blogs",
+    "is_folder": true,
+    "parent_id": 0,
+  }
+  })
+
+  const categoryFolder = await Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
+  "story": {
+    "name": "Categories",
+    "slug": "categories",
+    "is_folder": true,
+    "parent_id": 0,
+  }
+  })
+
+  const authorFolder = await Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
+  "story": {
+    "name": "Authors",
+    "slug": "authors",
+    "is_folder": true,
+    "parent_id": 0,
+  }
+  })
+
+  // Create stories for each group sequentially
+  for (const group of ["author", "category", "article"]) {
     for (const entry of groupedEntries[group]) {
       try {
-        let mapped: MappedStory | null = null;
+        let mapped = null;
         switch (group) {
           case "author":
-            mapped = await mapAuthorEntry(entry, assets, locale);
+            mapped = await mapAuthorEntry(entry, assets, locale, authorFolder.data.story.id);
             break;
           case "category":
-            mapped = mapCategoryEntry(entry, locale);
+            mapped = mapCategoryEntry(entry, locale, categoryFolder.data.story.id);
             break;
           case "article":
-            mapped = await mapArticleEntry(entry, locale);
+            mapped = await mapArticleEntry(entry, locale, blogFolder.data.story.id);
             break;
         }
 
@@ -180,11 +190,7 @@ async function createStoriesSequentially(
   }
 }
 
-export default async function importContentTypes(
-  entries: ContentfulExport["entries"],
-  assets: ContentfulExport["assets"],
-  locale: string = "en-US"
-) {
+export default async function importEntries(entries, assets, locale = "en-US") {
   console.log("Importing entries...");
   const grouped = groupEntries(entries);
   await createStoriesSequentially(grouped, assets, locale);
