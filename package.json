@@ -1,12 +1,10 @@
 {
   "scripts": {
     "export": "contentful space export --config contentfulConfig.json",
-    "migrate": "node src/scripts/migrate.js"
+    "migrate": "contentful space export --config contentfulConfig.json && node src/scripts/migrate.js"
   },
   "dependencies": {
-    "contentful-export": "^7.21.53",
-    "contentful-management": "^11.52.2",
-    "json-patch": "^0.7.0",
+    "contentful-cli": "^3.8.8",
     "slugify": "^1.6.6",
     "storyblok-js-client": "^7.0.0"
   },

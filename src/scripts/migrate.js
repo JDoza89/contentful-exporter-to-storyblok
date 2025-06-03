@@ -1,19 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
-import runContentfulExport from "contentful-export";
-import contentfulConfig from "../../contentfulConfig.json" with { type: "json" };
 import importAssets from "./utils/importAssets.js";
 import importEntries from "./utils/importEntries.js";
 
-async function exportContentful() {
-  console.log("Exporting Contentful data...");
-  try {
-    await runContentfulExport(contentfulConfig);
-    console.log("✅ Export completed.");
-  } catch (error) {
-    console.error("❌ Export failed:", error);
-  }
-}
 async function loadExport() {
   const filePath = path.resolve(
     process.cwd(),
@@ -38,7 +27,6 @@ async function runMigration() {
 async function main() {
   try {
     console.log("Starting migration...");
-    await exportContentful();
     await runMigration();
   } catch (error) {
     console.error("Migration failed:", error);
