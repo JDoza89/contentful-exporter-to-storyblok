@@ -37,8 +37,8 @@ npm install
    }
    ```
 
-To learn how to create a Personal Access Token for Storyblok, refer to this documentation:
-[Storyblok Access Tokens](https://www.storyblok.com/docs/concepts/access-tokens)
+   To learn how to create a Personal Access Token for Storyblok, refer to this documentation:
+   [Storyblok Access Tokens](https://www.storyblok.com/docs/concepts/access-tokens)
 
 3. Run the Migration
 
