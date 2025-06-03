@@ -20,25 +20,26 @@ npm install
 ```
 
 2. Populate the Configs
-   <br/>
-   Contentful:
-   <br/>
-   Refer to the Contentful [space export command](https://github.com/contentful/contentful-cli/tree/main/docs/space/export) documentation to determine the required values for the `contentfulConfig.json` file.
 
-   Storyblok:
-   <br/>
-   Create a `storyblokConfig.json` file in the project root with the following content:
+<br/>
+Contentful:
+<br/>
+Refer to the Contentful [space export command](https://github.com/contentful/contentful-cli/tree/main/docs/space/export) documentation to determine the required values for the `contentfulConfig.json` file.
 
-   ```json
-   {
-     "storyblokPersonalAccessToken": "your_personal_access_token",
-     "storyblokSpaceId": "your_space_id",
-     "storyblokSpaceRegion": "your_space_region"
-   }
-   ```
+Storyblok:
+<br/>
+Create a `storyblokConfig.json` file in the project root with the following content:
 
-   To learn how to create a Personal Access Token for Storyblok, refer to this documentation:
-   [Storyblok Access Tokens](https://www.storyblok.com/docs/concepts/access-tokens)
+```json
+{
+  "storyblokPersonalAccessToken": "your_personal_access_token",
+  "storyblokSpaceId": "your_space_id",
+  "storyblokSpaceRegion": "your_space_region"
+}
+```
+
+To learn how to create a Personal Access Token for Storyblok, refer to this documentation:
+[Storyblok Access Tokens](https://www.storyblok.com/docs/concepts/access-tokens)
 
 3. Run the Migration
 
