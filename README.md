@@ -19,13 +19,14 @@ Getting Started
 npm install
 ```
 
-2. Populate the Configs
+2. Populate the Configs:
 
 <br/>
 Contentful:
 <br/>
 Refer to the Contentful [space export command](https://github.com/contentful/contentful-cli/tree/main/docs/space/export) documentation to determine the required values for the `contentfulConfig.json` file.
-
+<br/>
+<br/>
 Storyblok:
 <br/>
 Create a `storyblokConfig.json` file in the project root with the following content:
