@@ -139,6 +139,7 @@ async function createStoriesSequentially(groupedEntries, assets, locale) {
   const categoryFolder = await createStoryFolder("Categories", "categories"); 
   const authorFolder = await createStoryFolder("Authors", "authors");
 
+  let importCount = 0;
   // Create stories for each group sequentially
   for (const [group, entries] of Object.entries(groupedEntries)) {
     for (const entry of entries) {
@@ -164,17 +165,20 @@ async function createStoriesSequentially(groupedEntries, assets, locale) {
             }
           );
           console.log(`✅ Created ${group}: ${mapped.name}`);
+          importCount++;
         }
       } catch (error) {
         console.error(`❌ Failed to create ${group}:`, error);
       }
     }
   }
+  return importCount;
 }
 
 export default async function importEntries(entries, assets, locale = "en-US") {
   console.log("Importing entries...");
   const grouped = groupEntries(entries);
-  await createStoriesSequentially(grouped, assets, locale);
+  const count = await createStoriesSequentially(grouped, assets, locale);
   console.log("✅ Entries imported successfully.");
+  return count;
 }

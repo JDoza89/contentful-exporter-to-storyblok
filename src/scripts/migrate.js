@@ -17,8 +17,11 @@ async function runMigration() {
   console.log("Loading Data:");
   const data = await loadExport();
   console.log("✅ Data loaded successfully.", data);
-  await importAssets(data.assets, "en-US");
-  await importEntries(data.entries, data.assets);
+  const assets = await importAssets(data.assets, "en-US");
+  const entries = await importEntries(data.entries, data.assets);
+  console.log(
+    `🎉 Migration completed: ${assets} assets and ${entries} entries imported.`
+  );
 }
 
 async function main() {

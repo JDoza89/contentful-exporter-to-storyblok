@@ -19,6 +19,7 @@ async function finishUpload(signed_request, file) {
 }
 
 export default async function importAssets(assets, locale = "en-US") {
+  let importCount = 0;
   console.log("Importing assets...");
   for (const asset of assets ?? []) {
     const file = asset.fields.file?.[locale];
@@ -42,9 +43,11 @@ export default async function importAssets(assets, locale = "en-US") {
           await finishUpload(response.data, contentPath);
         }
         console.log("✅ Asset uploaded:", asset.fields.title?.[locale]);
+        importCount++;
       } catch (error) {
         console.log("❌ Asset upload failed:", error);
       }
     }
   }
+    return importCount;
 }

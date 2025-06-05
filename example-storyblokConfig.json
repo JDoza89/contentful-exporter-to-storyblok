@@ -1,5 +1,4 @@
 {
   "storyblokPersonalAccessToken": "your_personal_access_token",
-  "storyblokSpaceId": "your_space_id",
-  "storyblokSpaceRegion": "your_space_region"
+  "storyblokSpaceId": "your_space_id"
 }
