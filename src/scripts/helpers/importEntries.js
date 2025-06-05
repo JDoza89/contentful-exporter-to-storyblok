@@ -47,14 +47,9 @@ async function mapAuthorEntry(entry, assets, locale, parentFolder) {
       name:
         entry.fields?.title?.[locale] || entry.fields?.internalName?.[locale],
       externalId: entry.sys.id, // used to find the value and assign it to the correct blog - temporary field
+      bio: convertContentfulRT(entry.fields?.bio?.[locale]),
       image: {
-        id: image?.id,
-        alt: image?.alt,
-        focus: image?.focus,
-        title: image?.title,
-        source: image?.source,
-        filename: image?.filename,
-        copyright: image?.copyright,
+        ...image,
         fieldtype: "asset",
         is_external_url: false,
       },
@@ -109,14 +104,13 @@ async function mapArticleEntry(entry, locale, parentFolder) {
     }
   );
 
-  const rt = convertContentfulRT(entry.fields?.body?.[locale]);
   return {
     name: entry.fields?.internalName?.[locale],
     slug: entry.fields?.slug?.[locale],
     content: {
       name:
         entry.fields?.title?.[locale] || entry.fields?.internalName?.[locale],
-      body: rt,
+      body: convertContentfulRT(entry.fields?.body?.[locale]),
       date: entry.fields?.date?.[locale],
       authors: authors.data.stories.map((author) => author.uuid),
       categories: categories.data.stories.map((category) => category.uuid),
@@ -128,38 +122,26 @@ async function mapArticleEntry(entry, locale, parentFolder) {
   };
 }
 
+async function createStoryFolder(name, slug, parentId = 0) {
+  return Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
+    story: {
+      name: name,
+      slug: slug,
+      is_folder: true,
+      parent_id: parentId,      
+    }
+  })
+}
+
 async function createStoriesSequentially(groupedEntries, assets, locale) {
   // Create the parent folders first
-  const blogFolder = await Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
-  "story": {
-    "name": "Blog",
-    "slug": "blogs",
-    "is_folder": true,
-    "parent_id": 0,
-  }
-  })
-
-  const categoryFolder = await Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
-  "story": {
-    "name": "Categories",
-    "slug": "categories",
-    "is_folder": true,
-    "parent_id": 0,
-  }
-  })
-
-  const authorFolder = await Storyblok.post(`/spaces/${storyblokConfig.storyblokSpaceId}/stories`, {
-  "story": {
-    "name": "Authors",
-    "slug": "authors",
-    "is_folder": true,
-    "parent_id": 0,
-  }
-  })
+  const blogFolder = await createStoryFolder("Blog", "blogs");
+  const categoryFolder = await createStoryFolder("Categories", "categories"); 
+  const authorFolder = await createStoryFolder("Authors", "authors");
 
   // Create stories for each group sequentially
-  for (const group of ["author", "category", "article"]) {
-    for (const entry of groupedEntries[group]) {
+  for (const [group, entries] of Object.entries(groupedEntries)) {
+    for (const entry of entries) {
       try {
         let mapped = null;
         switch (group) {
@@ -175,7 +157,7 @@ async function createStoriesSequentially(groupedEntries, assets, locale) {
         }
 
         if (mapped) {
-          const res = await Storyblok.post(
+          await Storyblok.post(
             `spaces/${storyblokConfig.storyblokSpaceId}/stories`,
             {
               story: mapped,

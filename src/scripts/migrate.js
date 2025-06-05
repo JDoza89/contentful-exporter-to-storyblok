@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
-import importAssets from "./utils/importAssets.js";
-import importEntries from "./utils/importEntries.js";
+import importAssets from "./helpers/importAssets.js";
+import importEntries from "./helpers/importEntries.js";
 
 async function loadExport() {
   const filePath = path.resolve(
@@ -17,9 +17,6 @@ async function runMigration() {
   console.log("Loading Data:");
   const data = await loadExport();
   console.log("✅ Data loaded successfully.", data);
-  //TODO: support locales and content types
-  // The current assumption is that the content types are already created in Storyblok
-  // and only en locale is used
   await importAssets(data.assets, "en-US");
   await importEntries(data.entries, data.assets);
 }
