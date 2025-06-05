@@ -1,4 +1,4 @@
-//Does not handle all cases, only the ones we need for this example
+// Does not handle all cases, only the ones we need for this example
 
 const markTypeMap = {
   bold: { type: "bold" },
